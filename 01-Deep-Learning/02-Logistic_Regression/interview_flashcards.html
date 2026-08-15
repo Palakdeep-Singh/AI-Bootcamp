@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interview Flashcards — DSA + DL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Patrick+Hand&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EEF3F5;
+    --paper-line:#CBD9E0;
+    --margin-red:#C1392B;
+    --ink:#1F2A44;
+    --ink-soft:#3B4A63;
+    --highlighter:#FFD966;
+    --ring:#9AA5AE;
+    --ring-shadow:#6b7580;
+    --tag-dsa:#5B8FB9;
+    --tag-dl:#5FA678;
+    --tag-reg:#D98E4A;
+    --tag-real:#C1685A;
+    --card-back:#FFFDF6;
+    --shadow: 0 10px 30px rgba(31,42,68,0.15);
+  }
+
+  *{box-sizing:border-box;}
+
+  body{
+    margin:0;
+    min-height:100vh;
+    background:
+      repeating-linear-gradient(
+        to bottom,
+        var(--paper) 0px,
+        var(--paper) 33px,
+        var(--paper-line) 34px
+      );
+    background-color:var(--paper);
+    font-family:'Patrick Hand', cursive;
+    color:var(--ink);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:32px 16px 60px;
+    position:relative;
+  }
+
+  body::before{
+    content:"";
+    position:fixed;
+    top:0; bottom:0; left:48px;
+    width:2px;
+    background:var(--margin-red);
+    opacity:0.35;
+    z-index:0;
+  }
+
+  header{
+    text-align:center;
+    margin-bottom:22px;
+    z-index:1;
+  }
+
+  header h1{
+    font-family:'Kalam', cursive;
+    font-weight:700;
+    font-size:2.4rem;
+    margin:0 0 4px;
+    color:var(--ink);
+    transform:rotate(-1deg);
+  }
+
+  header p{
+    font-family:'Space Mono', monospace;
+    font-size:0.75rem;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin:0;
+    opacity:0.75;
+  }
+
+  .filters{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    justify-content:center;
+    margin-bottom:26px;
+    z-index:1;
+  }
+
+  .filter-chip{
+    font-family:'Space Mono', monospace;
+    font-size:0.7rem;
+    padding:6px 12px;
+    border:1.5px solid var(--ink);
+    border-radius:14px;
+    background:transparent;
+    color:var(--ink);
+    cursor:pointer;
+    transition:all 0.15s ease;
+  }
+  .filter-chip.active{
+    background:var(--ink);
+    color:var(--paper);
+  }
+  .filter-chip:hover{ transform:translateY(-1px); }
+
+  .deck-wrap{
+    position:relative;
+    width:100%;
+    max-width:560px;
+    z-index:1;
+  }
+
+  /* spiral binder */
+  .rings{
+    position:absolute;
+    top:14px;
+    left:-6px;
+    display:flex;
+    flex-direction:column;
+    gap:26px;
+    z-index:3;
+  }
+  .ring{
+    width:20px;
+    height:20px;
+    border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #fff 0%, var(--ring) 40%, var(--ring-shadow) 100%);
+    box-shadow: inset 0 0 0 3px var(--paper);
+  }
+
+  .card-scene{
+    perspective:1600px;
+    margin-left:14px;
+  }
+
+  .card{
+    position:relative;
+    width:100%;
+    min-height:340px;
+    transform-style:preserve-3d;
+    transition:transform 0.55s cubic-bezier(.4,.2,.2,1);
+    cursor:pointer;
+  }
+  .card.flipped{ transform:rotateY(180deg); }
+
+  .face{
+    position:absolute;
+    inset:0;
+    backface-visibility:hidden;
+    border-radius:6px;
+    border:1.5px solid var(--ink);
+    box-shadow:var(--shadow);
+    padding:26px 24px 20px 34px;
+    display:flex;
+    flex-direction:column;
+  }
+
+  .front{
+    background:var(--card-back);
+    justify-content:space-between;
+  }
+
+  .back{
+    background:var(--card-back);
+    transform:rotateY(180deg);
+    overflow-y:auto;
+  }
+
+  .tag{
+    position:absolute;
+    top:-12px;
+    left:24px;
+    font-family:'Space Mono', monospace;
+    font-size:0.68rem;
+    padding:4px 10px;
+    border-radius:3px;
+    color:#fff;
+    transform:rotate(-2deg);
+    box-shadow:0 2px 4px rgba(0,0,0,0.2);
+  }
+
+  .counter{
+    position:absolute;
+    top:-12px;
+    right:20px;
+    font-family:'Space Mono', monospace;
+    font-size:0.7rem;
+    background:var(--ink);
+    color:var(--paper);
+    padding:4px 10px;
+    border-radius:3px;
+    transform:rotate(2deg);
+  }
+
+  .q-label{
+    font-family:'Space Mono', monospace;
+    font-size:0.68rem;
+    letter-spacing:0.1em;
+    color:var(--ink-soft);
+    text-transform:uppercase;
+    margin-bottom:10px;
+  }
+
+  .question{
+    font-family:'Kalam', cursive;
+    font-weight:700;
+    font-size:1.45rem;
+    line-height:1.4;
+    color:var(--ink);
+  }
+
+  .flip-hint{
+    align-self:center;
+    font-family:'Patrick Hand', cursive;
+    font-size:1rem;
+    color:var(--ink-soft);
+    display:flex;
+    align-items:center;
+    gap:6px;
+    opacity:0.8;
+  }
+
+  .section-label{
+    font-family:'Space Mono', monospace;
+    font-size:0.68rem;
+    letter-spacing:0.06em;
+    color:#fff;
+    background:var(--ink-soft);
+    display:inline-block;
+    padding:3px 8px;
+    border-radius:3px;
+    margin:10px 0 6px;
+  }
+
+  .hi-text{
+    font-size:1.12rem;
+    line-height:1.55;
+    color:var(--ink);
+  }
+
+  .en-box{
+    margin-top:6px;
+    background:var(--highlighter);
+    background:linear-gradient(105deg, rgba(255,217,102,0.55) 0%, rgba(255,217,102,0.55) 100%);
+    padding:12px 14px;
+    border-left:3px dashed var(--margin-red);
+    border-radius:2px;
+    font-size:1.08rem;
+    line-height:1.55;
+    font-style:italic;
+    color:var(--ink);
+  }
+
+  mark{
+    background:var(--highlighter);
+    padding:0 2px;
+  }
+
+  .nav-row{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:18px;
+    margin-top:26px;
+    z-index:1;
+  }
+
+  .nav-btn{
+    font-family:'Kalam', cursive;
+    font-size:1.1rem;
+    background:none;
+    border:2px solid var(--ink);
+    color:var(--ink);
+    border-radius:50%;
+    width:44px;
+    height:44px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:transform 0.15s ease, background 0.15s ease;
+  }
+  .nav-btn:hover{ background:var(--ink); color:var(--paper); transform:scale(1.06); }
+  .nav-btn:disabled{ opacity:0.3; cursor:default; }
+  .nav-btn:disabled:hover{ background:none; color:var(--ink); transform:none; }
+
+  .dots{
+    display:flex;
+    gap:6px;
+    margin-top:16px;
+    flex-wrap:wrap;
+    justify-content:center;
+    max-width:400px;
+    z-index:1;
+  }
+  .dot{
+    width:9px; height:9px;
+    border-radius:50%;
+    background:var(--paper-line);
+    border:1.5px solid var(--ink-soft);
+    cursor:pointer;
+  }
+  .dot.active{ background:var(--margin-red); border-color:var(--margin-red); }
+
+  .subtext{
+    font-family:'Space Mono', monospace;
+    font-size:0.7rem;
+    color:var(--ink-soft);
+    margin-top:18px;
+    opacity:0.6;
+    text-align:center;
+    z-index:1;
+  }
+
+  @media (max-width:480px){
+    header h1{ font-size:1.9rem; }
+    .question{ font-size:1.25rem; }
+    .card{ min-height:400px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Interview Flashcards</h1>
+  <p>DSA + Deep Learning — SMS DataTech Prep</p>
+</header>
+
+<div class="filters" id="filters"></div>
+
+<div class="deck-wrap">
+  <div class="rings" id="rings"></div>
+  <div class="card-scene">
+    <div class="card" id="card">
+      <div class="face front">
+        <div class="tag" id="tag-front"></div>
+        <div class="counter" id="counter"></div>
+        <div>
+          <div class="q-label">Interview Question</div>
+          <div class="question" id="question"></div>
+        </div>
+        <div class="flip-hint">✍️ tap card to flip →</div>
+      </div>
+      <div class="face back">
+        <div class="tag" id="tag-back"></div>
+        <div id="back-content"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="nav-row">
+  <button class="nav-btn" id="prevBtn">←</button>
+  <button class="nav-btn" id="flipBtn">⟳</button>
+  <button class="nav-btn" id="nextBtn">→</button>
+</div>
+
+<div class="dots" id="dots"></div>
+<div class="subtext">click card / use ← → arrow keys / space to flip</div>
+
+<script>
+const CATS = {
+  dsa: {label:'DSA', color:'var(--tag-dsa)'},
+  dl: {label:'DEEP LEARNING', color:'var(--tag-dl)'},
+  reg: {label:'REGULARIZATION', color:'var(--tag-reg)'},
+  real: {label:'REAL CO. QUESTION', color:'var(--tag-real)'}
+};
+
+const cards = [
+  {
+    cat:'dsa', topic:'Recursion',
+    q:"What actually happens in memory during recursion? Why does unbounded recursion throw a stack overflow?",
+    hi:"Har function call ek <mark>stack frame</mark> banata hai jisme local variables, parameters aur return address store hota hai. Har recursive call ek naya frame stack ke upar push karta hai — koi bhi frame pop nahi hota jab tak <mark>base case</mark> hit na ho aur calls return na karna shuru karein. Agar base case galat ya missing hai, frames pile hote rehte hain jab tak allocated stack memory (usually kuch MB) khatam na ho jaaye.",
+    en:"Each function call creates a stack frame holding local variables, parameters, and the return address. Every recursive call pushes a new frame on top — none get popped until the base case is hit and calls start returning. Without a correct base case, frames keep piling up until the stack memory is exhausted, causing a stack overflow."
+  },
+  {
+    cat:'dsa', topic:'Arrays',
+    q:"Given an array, how would you detect a duplicate? Compare nested loops vs sort-first vs hash set — time & space trade-offs.",
+    hi:"Teen tareeke: <b>Nested loops</b> — har element ko baaki sabse compare karo → Time O(n²), Space O(1). <b>Sort first</b> — array sort karo (O(n log n)), fir ek linear pass mein adjacent duplicates dhoondo → Time O(n log n), Space O(1) (in-place sort ke saath). <b>Hash Set</b> — element dekhte hi set mein check karo, agar already hai toh duplicate → Time O(n), Space O(n).",
+    en:"Three approaches: Nested loops compare every element against every other — O(n²) time, O(1) space. Sorting first takes O(n log n), then a linear pass finds adjacent duplicates — O(n log n) time, O(1) space in-place. A hash set checks membership as you iterate — O(n) time, O(n) space. Hash set is fastest but trades space for speed."
+  },
+  {
+    cat:'dl', topic:'Perceptron',
+    q:"In a single perceptron, what's the role of weight vs bias? Why can't a network learn without a non-linear activation function?",
+    hi:"<b>Weight</b> decide karta hai ki input kitna important hai (strength of influence), <b>bias</b> decision boundary ko shift karta hai (independent of input). Activation function <mark>non-linearity</mark> introduce karta hai — agar sirf linear transformations stack karo (koi activation nahi), poora network chahe kitna bhi deep ho, mathematically ek single linear function mein collapse ho jaata hai. Linear(Linear(x)) still linear hai. Isliye non-linear activation ke bina extra layers add karna bekaar hai.",
+    en:"The weight determines how much influence an input has, while the bias shifts the decision boundary independent of the input. The activation function introduces non-linearity — without it, stacking layers with only linear transformations collapses mathematically into a single linear function, no matter how deep the network is. So without non-linear activation, adding more layers is pointless."
+  },
+  {
+    cat:'reg', topic:'L1 Regularization',
+    q:"Why does L1 regularization produce exactly-zero (sparse) weights, while L2 only shrinks weights small?",
+    hi:"L1 ka gradient <b>constant</b> hota hai (λ·sign(w)) — weight chahe bada ho ya chhota, penalty hamesha same fixed force se zero ki taraf kheenchti hai, isliye weight <mark>zero cross karke ruk jaata hai</mark>. Geometrically L1 ka constraint region ek <b>diamond</b> hai (sharp corners) — optimal solution corner par lagta hai jahan weight = 0.",
+    en:"L1's gradient is constant regardless of weight magnitude, applying a fixed pull toward zero at every step — this causes weights to actually reach exactly zero, producing sparsity. Geometrically, L1's constraint region is a diamond with sharp corners, and the optimal solution tends to land on those corners where one or more weights are exactly zero."
+  },
+  {
+    cat:'reg', topic:'L2 Regularization',
+    q:"Why does L2 regularization shrink weights but never make them exactly zero?",
+    hi:"L2 ka gradient (2λw) weight ke <b>proportional</b> hota hai — jitna weight chhota hota jaata hai, force bhi utni chhoti hoti jaati hai. Zero ke paas force itni kam ho jaati hai ki weight kabhi exactly zero tak pahuchta nahi, bas asymptotically paas jaata rehta hai. Geometrically L2 ka region ek <b>smooth circle</b> hai — koi sharp corner nahi, isliye sparsity nahi milti.",
+    en:"L2's gradient is proportional to the weight's magnitude, so the pull toward zero weakens as the weight shrinks — weights approach zero asymptotically but rarely reach it exactly. Geometrically, L2's constraint region is a smooth circle with no corners, so the optimal solution rarely lands exactly on an axis. This means L2 shrinks weights but doesn't give sparsity."
+  },
+  {
+    cat:'reg', topic:'Elastic Net',
+    q:"What is Elastic Net, and why combine L1 and L2 instead of using just one?",
+    hi:"Elastic Net <b>L1 + L2 dono penalties</b> ek saath add karta hai, mixing ratio se control karte hue. Sirf L1 ka problem — correlated features mein se randomly kisi ek ko poora zero kar deta hai (unstable). Sirf L2 ka problem — kabhi sparsity nahi milti. Elastic Net dono ka fayda leta hai: L1 se <mark>sparsity/feature selection</mark>, L2 se correlated features ko <mark>group mein rakhna</mark>.",
+    en:"Elastic Net combines both L1 and L2 penalties, controlled by a mixing ratio. L1 alone struggles with correlated features — it arbitrarily zeroes out one and keeps the other, which is unstable. L2 alone never produces true sparsity. Elastic Net gets the best of both: the L1 component gives sparsity for feature selection, while the L2 component groups correlated features together instead of eliminating one arbitrarily."
+  },
+  {
+    cat:'reg', topic:'Dropout',
+    q:"Why doesn't dropout weaken the model? And what breaks if dropout stays 'on' during test time?",
+    hi:"Training ke time random neurons <b>temporarily off</b> hote hain (20-50%, alag subset har baar) — isse neurons <mark>co-adapt</mark> nahi kar paate, har neuron independently useful features seekhta hai. Effectively chhote sub-networks ka ensemble train hota hai, jo accuracy <i>improve</i> karta hai. Agar dropout test time pe bhi on rahe: (1) <b>Non-deterministic</b> output — same input, alag result har baar. (2) Poora trained network available hote hue bhi sirf partial use ho raha — accuracy kam. Isi liye <b>inverted dropout</b> use karte hain — training time hi active outputs ko 1/(1-p) se scale kar dete hain.",
+    en:"Random neurons are deactivated during training — 20 to 50 percent, a different subset each pass — which prevents co-adaptation and forces each neuron to learn independently useful features, effectively training an ensemble of smaller sub-networks. If dropout stayed on at test time: inference becomes non-deterministic, and the model underuses its full trained capacity. That's why we use inverted dropout — scaling active outputs by 1/(1-p) during training so nothing needs to change at test time."
+  },
+  {
+    cat:'reg', topic:'Reg vs Norm',
+    q:"Quick rapid-fire: what's the difference between regularization and normalization?",
+    hi:"<b>Normalization</b> = numbers ko ek consistent range mein laata hai (0-1 ya mean 0) — yeh ek <mark>data-preprocessing</mark> concept hai. <b>Regularization</b> = model complexity ko constrain karta hai taaki overfitting na ho — yeh ek <mark>training-time</mark> concept hai. Naam similar sound karte hain but bilkul different problems solve karte hain.",
+    en:"Normalization rescales input data or activations to a consistent range — it's a data-preprocessing concept. Regularization constrains model complexity to prevent overfitting — it's a training-time concept. They solve completely different problems, even though the names sound similar."
+  },
+  {
+    cat:'real', topic:'SMS DataTech — Reported Q',
+    q:"What is an API? What are the different types of APIs (REST, SOAP, GraphQL), and how would you explain REST to a non-technical person?",
+    hi:"API (Application Programming Interface) ek <mark>contract/interface</mark> hai jo do software systems ko ek dusre se baat karne deta hai bina internal implementation dikhaye. Types: <b>REST</b> (stateless, HTTP methods — GET/POST/PUT/DELETE, JSON), <b>SOAP</b> (strict XML protocol, enterprise/legacy systems mein zyada), <b>GraphQL</b> (client exactly wahi data query kar sakta hai jo chahiye, over/under-fetching avoid hoti hai). Non-technical explanation: <i>'API ek waiter jaisa hai restaurant mein — tum (client) menu se order karte ho, waiter kitchen (server) tak request leke jaata hai aur khaana (response) leke wapas aata hai — tumhe kitchen ke andar kya ho raha hai woh jaanne ki zaroorat nahi.'</i>",
+    en:"An API is a contract that lets two software systems communicate without exposing internal implementation. REST is stateless and uses standard HTTP methods with JSON responses. SOAP is a stricter XML-based protocol common in enterprise/legacy systems. GraphQL lets the client request exactly the data it needs, avoiding over- or under-fetching. To explain it simply: an API is like a waiter in a restaurant — you place an order, the waiter carries your request to the kitchen, and brings the response back — you never need to know what happens inside the kitchen."
+  },
+  {
+    cat:'dsa', topic:'Strings',
+    q:"Given a string, how would you check if it's a valid palindrome, ignoring non-alphanumeric characters and case?",
+    hi:"<b>Two-pointer approach</b>: ek pointer start se, ek end se. Dono pointers ko tab tak aage badhao jab tak woh kisi <mark>alphanumeric character</mark> par na ruken (skip spaces, punctuation). Fir dono characters ko <mark>lowercase</mark> mein compare karo — agar match nahi hue, false return karo. Jab pointers cross ho jaayein bina kisi mismatch ke, string palindrome hai. Time O(n), Space O(1) — koi extra string banane ki zaroorat nahi.",
+    en:"Use a two-pointer approach — one pointer from the start, one from the end. Advance each pointer past any non-alphanumeric characters, then compare the two characters case-insensitively. If they don't match, return false immediately. If the pointers cross without a mismatch, the string is a palindrome. This runs in O(n) time and O(1) space, with no need to build a cleaned-up copy of the string."
+  }
+];
+
+let idx = 0;
+let flipped = false;
+let activeFilter = 'all';
+
+const filtersEl = document.getElementById('filters');
+const allChip = document.createElement('button');
+allChip.className = 'filter-chip active';
+allChip.textContent = 'ALL';
+allChip.onclick = () => setFilter('all');
+filtersEl.appendChild(allChip);
+
+Object.keys(CATS).forEach(key=>{
+  const chip = document.createElement('button');
+  chip.className = 'filter-chip';
+  chip.textContent = CATS[key].label;
+  chip.onclick = () => setFilter(key);
+  chip.dataset.key = key;
+  filtersEl.appendChild(chip);
+});
+
+function setFilter(key){
+  activeFilter = key;
+  [...filtersEl.children].forEach(c=>{
+    c.classList.toggle('active', (key==='all' && c.textContent==='ALL') || c.dataset.key===key);
+  });
+  idx = 0;
+  flipped = false;
+  renderDots();
+  renderCard();
+}
+
+function getFiltered(){
+  return activeFilter === 'all' ? cards : cards.filter(c=>c.cat===activeFilter);
+}
+
+const ringsEl = document.getElementById('rings');
+for(let i=0;i<7;i++){
+  const r = document.createElement('div');
+  r.className='ring';
+  ringsEl.appendChild(r);
+}
+
+const cardEl = document.getElementById('card');
+const questionEl = document.getElementById('question');
+const backContentEl = document.getElementById('back-content');
+const tagFrontEl = document.getElementById('tag-front');
+const tagBackEl = document.getElementById('tag-back');
+const counterEl = document.getElementById('counter');
+const dotsEl = document.getElementById('dots');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const flipBtn = document.getElementById('flipBtn');
+
+function renderCard(){
+  const list = getFiltered();
+  const item = list[idx];
+  const catInfo = CATS[item.cat];
+
+  questionEl.textContent = item.q;
+  tagFrontEl.textContent = item.topic;
+  tagFrontEl.style.background = catInfo.color;
+  tagBackEl.textContent = item.topic;
+  tagBackEl.style.background = catInfo.color;
+  counterEl.textContent = (idx+1) + ' / ' + list.length;
+
+  backContentEl.innerHTML = `
+    <div class="section-label">🟠 Hinglish — Samajh</div>
+    <div class="hi-text">${item.hi}</div>
+    <div class="section-label">🔵 English — Bolne ke liye</div>
+    <div class="en-box">"${item.en}"</div>
+  `;
+
+  cardEl.classList.toggle('flipped', flipped);
+  prevBtn.disabled = idx===0;
+  nextBtn.disabled = idx===list.length-1;
+  renderDots();
+}
+
+function renderDots(){
+  const list = getFiltered();
+  dotsEl.innerHTML = '';
+  list.forEach((_,i)=>{
+    const d = document.createElement('div');
+    d.className = 'dot' + (i===idx ? ' active' : '');
+    d.onclick = (e)=>{ e.stopPropagation(); idx=i; flipped=false; renderCard(); };
+    dotsEl.appendChild(d);
+  });
+}
+
+cardEl.addEventListener('click', ()=>{
+  flipped = !flipped;
+  cardEl.classList.toggle('flipped', flipped);
+});
+
+flipBtn.addEventListener('click', (e)=>{
+  e.stopPropagation();
+  flipped = !flipped;
+  cardEl.classList.toggle('flipped', flipped);
+});
+
+prevBtn.addEventListener('click', (e)=>{
+  e.stopPropagation();
+  if(idx>0){ idx--; flipped=false; renderCard(); }
+});
+nextBtn.addEventListener('click', (e)=>{
+  e.stopPropagation();
+  const list = getFiltered();
+  if(idx<list.length-1){ idx++; flipped=false; renderCard(); }
+});
+
+document.addEventListener('keydown', (e)=>{
+  if(e.key==='ArrowRight') nextBtn.click();
+  if(e.key==='ArrowLeft') prevBtn.click();
+  if(e.key===' '){ e.preventDefault(); flipped=!flipped; cardEl.classList.toggle('flipped', flipped); }
+});
+
+renderCard();
+</script>
+
+</body>
+</html>
