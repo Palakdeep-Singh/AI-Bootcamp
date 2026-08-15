@@ -1,0 +1,40 @@
+# Python virtual environment
+.venv/
+venv/
+env/
+
+# Python cache and compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Editor and OS files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Environment and local secrets
+.env
+.env.*
+*.local
+
+# Streamlit / notebook / test artifacts
+.streamlit/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Logs and temporary files
+*.log
+*.tmp
+tmp/
+temp/
+
+# Project-specific local data
+uploads/
+*.csv
+*.xlsx
+*.json
