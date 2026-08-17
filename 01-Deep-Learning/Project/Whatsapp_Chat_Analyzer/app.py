@@ -114,9 +114,9 @@ if file_uploaded is not None:
     if st.sidebar.button("Show Analysis"):
         st.header("Chat Summary")
 
-        num_msgs, words_count, media = helper.fetch_stats(selected_user, df)
+        num_msgs, words_count, media,links = helper.fetch_stats(selected_user, df)
 
-        col1, col2, col3 = st.columns(3)
+        col1, col2, col3, col4 = st.columns(4)
 
         with col1:
             st.markdown(
@@ -150,7 +150,18 @@ if file_uploaded is not None:
                 """,
                 unsafe_allow_html=True,
             )
-            
+        
+        with col4:
+            st.markdown(
+                        f"""
+                        <div class="metric-card">
+                            <div class="metric-label">Links Shared</div>
+                            <div class="metric-value">{links}</div>
+                        </div>
+                        """,
+                        unsafe_allow_html=True,
+                        )
+                                       
             st.write("")
             
         if selected_user == "Overall":
@@ -158,6 +169,7 @@ if file_uploaded is not None:
         else:
             preview_df = df[df['user'] == selected_user].sort_values('date').tail(5)
 
+        ## show table preview under the cards.
         preview_df = preview_df[['user', 'message', 'year', 'month', 'day', 'hour', 'minute']].reset_index(drop=True)
         
         preview_df.insert(0, 'Sr. No', range(1, len(preview_df) + 1))
